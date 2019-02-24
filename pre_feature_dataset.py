@@ -45,7 +45,7 @@ for each_rawimgs_dir in rawimgs_dir:
         img_src_read = cv2.imread(img_src_full_path)
 
         # RESIZE raw imgs
-        img_src_read = misc.imresize(img_src_read, [RESIZE_SHAPE[0],RESIZE_SHAPE[1]], interp='bilinear')
+        img_src_read = misc.imresize(img_src_read, [RESIZE_SHAPE[0], RESIZE_SHAPE[1]], interp='bilinear')
 
 
         #

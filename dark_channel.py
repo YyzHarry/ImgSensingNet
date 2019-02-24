@@ -7,9 +7,8 @@ import matplotlib
 import matplotlib.pyplot as plt
 import sys
 
-# ========================================== Dark Channel Calculation (Un-used here)
+
 def DarkChannel(I, w):
-    # Un-normalized ([0, 255]) image
     M, N, _ = I.shape
     # Padded to patch_size for edge pixels
     padded = np.pad(I, ((int(w/2), int(w/2)), (int(w/2), int(w/2)), (0, 0)), 'edge')
@@ -19,8 +18,8 @@ def DarkChannel(I, w):
     return darkch
 
 
-# ========================================== Dark Channel Calculation (Normalized)
 def DarkChannel_Norm(image, size):
+    # normalized input
     b, g, r = cv2.split(image)
     dc = cv2.min(cv2.min(r,g), b)
     kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (size,size))
@@ -29,7 +28,6 @@ def DarkChannel_Norm(image, size):
     return darkch
 
 
-# ========================================== Atmosphere Light Calculation
 def AtmLight(image, darkch):
     [h, w] = image.shape[:2]
     imsize = h * w
@@ -56,12 +54,11 @@ def AtmLight(image, darkch):
     return A
 
 
-# ========================================== Transmission Map Calculation
 def TransmissionEstimate(image, A, size, omega):
-    # omega = 1 for haze map, = 0.9 for recoverd map
+    # default omega = 1 for haze map, 0.9 for recovered map
     im3 = np.empty(image.shape, image.dtype)
 
-    for ind in range(0,3):
+    for ind in range(3):
         # normalization with A
         im3[:, :, ind] = image[:, :, ind] / A[0, ind]
 
@@ -69,7 +66,6 @@ def TransmissionEstimate(image, A, size, omega):
     return transmission
 
 
-# ========================================== Guided Filter Calculation
 def Guidedfilter(image, p, r, eps):
     # Filter the guide image and divided into several windows
     mean_I = cv2.boxFilter(image, cv2.CV_64F, (r,r))
@@ -80,7 +76,7 @@ def Guidedfilter(image, p, r, eps):
     cov_Ip = mean_Ip - mean_I * mean_p
 
     mean_II = cv2.boxFilter(image * image, cv2.CV_64F, (r,r))
-    var_I   = mean_II - mean_I * mean_I
+    var_I = mean_II - mean_I * mean_I
 
     a = cov_Ip / (var_I + eps)
     b = mean_p - a * mean_I
@@ -94,7 +90,6 @@ def Guidedfilter(image, p, r, eps):
     return q
 
 
-# ========================================== Transmisstion Refine using Guided Filter
 def TransmissionRefine(image, et):
     gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
     gray = np.float64(gray) / 255
@@ -104,37 +99,34 @@ def TransmissionRefine(image, et):
     return t
 
 
-# ========================================== Recover the Haze-free map
-def Recover(image, t, A, tx = 0.1):
+def Recover(image, t, A, tx=0.1):
     res = np.empty(image.shape, image.dtype)
     t = cv2.max(t, tx)
-    for ind in range(0,3):
+    for ind in range(3):
         res[:, :, ind] = (image[:, :, ind] - A[0, ind]) / t + A[0, ind]
 
     return res
 
 
-# ========================================== Main
 if __name__ == '__main__':
-    # Read in by streaming? or one by one?
-    fn = 'Results/8.jpg'
-    
+
+    fn = 'results/forest.jpg'
     src = cv2.imread(fn)
-    # print(src)
+
     # Dark channel in [0,255]
     # darkch = DarkChannel(src, 15)
     
     # Image normalization
-    I = src.astype('float64') / 255
+    I = src.astype('float64') / 255.
     
     # Patch_Size = 15*15
     # Normalized dark channel
     darkch_norm = DarkChannel_Norm(I, 15)
     # Get the atmosphere light
     A = AtmLight(I, darkch_norm)
-    # Estimated transmisstion map
+    # Estimated transmission map
     te = TransmissionEstimate(I, A, 15, 1)
-    # Refined transmisstion map
+    # Refined transmission map
     t = TransmissionRefine(src, te)
     # Refined dark channel
     darkch_refined = 1 - t
@@ -148,21 +140,17 @@ if __name__ == '__main__':
     J[J < 0] = 0
     
     # Adaptive window size (for large input img)
-    cv2.namedWindow('DarkChannel', cv2.WINDOW_NORMAL)
-    cv2.namedWindow('DarkChannel_Refined', cv2.WINDOW_NORMAL)
-    cv2.namedWindow('Transmisstion', cv2.WINDOW_NORMAL)
-    cv2.namedWindow('Original', cv2.WINDOW_NORMAL)
-    cv2.namedWindow('Recovered', cv2.WINDOW_NORMAL)
-    
-    cv2.imshow('DarkChannel', darkch_norm)
-    cv2.imshow('DarkChannel_Refined', darkch_refined)
-    cv2.imshow('Transmisstion', t)
-    cv2.imshow('Original', src)
-    cv2.imshow('Recovered', J)
-    
-    # Need to rescale to [0,255]
-    cv2.imwrite('Results/darkch_norm.jpg', darkch_norm * 255)
-    cv2.imwrite('Results/darkch_refined.jpg', darkch_refined * 255)
-    cv2.imwrite('Results/recovered.jpg', J * 255)
-    
+    # cv2.namedWindow('DarkChannel', cv2.WINDOW_NORMAL)
+    # cv2.namedWindow('DarkChannel_Refined', cv2.WINDOW_NORMAL)
+    # cv2.namedWindow('Transmission', cv2.WINDOW_NORMAL)
+    # cv2.namedWindow('Original', cv2.WINDOW_NORMAL)
+    # cv2.namedWindow('Recovered', cv2.WINDOW_NORMAL)
+    #
+    # cv2.imshow('DarkChannel', darkch_norm)
+    # cv2.imshow('DarkChannel_Refined', darkch_refined)
+    # cv2.imshow('Transmission', t)
+    # cv2.imshow('Original', src)
+    # cv2.imshow('Recovered', J)
+
+    cv2.imwrite('results/forest_darkch.jpg', darkch_refined * 255, [int(cv2.IMWRITE_JPEG_QUALITY), 100])
     cv2.waitKey(0)
