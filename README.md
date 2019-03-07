@@ -1,6 +1,6 @@
 # ImgSensingNet: UAV Vision Guided Aerial-Ground Air Quality Sensing System
 
-This repository contains part of the implementation code for paper [ImgSensingNet: UAV Vision Guided Aerial-Ground Air Quality Sensing System](http://www.mit.edu/~yuzhe/) (INFOCOM 2019).
+This repository contains part of the implementation code for paper [ImgSensingNet: UAV Vision Guided Aerial-Ground Air Quality Sensing System](http://www.mit.edu/~yuzhe/imgsensnet.html) (INFOCOM 2019).
 
 __ImgSensingNet__ is a vision guided aerial-ground sensing system, for fine-grained air quality monitoring and forecasting using the fusion of haze images taken by the unmanned-aerial-vehicle (UAV) and the AQI data collected by an on-ground wireless sensor network (WSN).
 This code contains the __vision part__ implementation of ImgSensingNet, where we realize the end-to-end inference from the taken hazy images to the corresponding AQI values. Specifically, we propose:
@@ -50,13 +50,13 @@ python feature_extract.py --data-path <path> --save-path <path>
 python video_sampling.py --data-path <path> --save-path <path>
 ```
 
-Note that the extracted feature maps of each image will first be stacked together as an input tensor (which we call as the “hardwired” layer), and then feed into a 3D CNN model for training. More details can be found in [our paper]().
+Note that the extracted feature maps of each image will first be stacked together as an input tensor (which we call as the “hardwired” layer), and then feed into a 3D CNN model for training. More details can be found in [our paper](http://www.mit.edu/~yuzhe/imgsensnet.html).
 
 ## Demonstration
 A real-time demo of the UAV vision-based sensing (including feature extraction and real-time prediction) can be found [here](https://www.youtube.com/watch?v=VUn4e-oP0xk).
 
 ## Citation
-If you find the idea or code useful for your research, please cite our [paper](http://www.mit.edu/~yuzhe/):
+If you find the idea or code useful for your research, please cite our [paper](http://www.mit.edu/~yuzhe/imgsensnet.html):
 ```
 @inproceedings{yang2019imgsensingnet,
   title={ImgSensingNet: UAV Vision Guided Aerial-Ground Air Quality Sensing System},
